@@ -66,3 +66,9 @@ resource_map, travel_times = distribute_resources(source, initial_amount)
 # Output
 print("Resource Distribution from Hawai'i:")
 for island in sorted(resource_map.keys(), key=lambda x: travel_times.get(x, float('inf'))): print(f"{island}: {resource_map[island]:.2f} units (Travel Time: {travel_times[island]} hours)")
+# Expected Output:
+# Resource Distribution from Hawai'i:
+# Hawai'i: 100.00 units (Travel Time: 0 hours)
+# Tahiti: 100.00 units (Travel Time: 7 hours)
+# Fiji: 50.00 units (Travel Time: 11 hours)
+# Samoa: 50.00 units (Travel Time: 13 hours)
