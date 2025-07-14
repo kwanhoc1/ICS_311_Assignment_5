@@ -65,4 +65,4 @@ resource_map, travel_times = distribute_resources(source, initial_amount)
 
 # Output
 print("Resource Distribution from Hawai'i:")
-for island in sorted(sesource_map.keys(), key=lambda x: travel_times.get(x, float('inf))): print(f"{island}: {resource_map[island]:.2f} shells (Travel Time: {travel_times[island]} hours)")
+for island in sorted(resource_map.keys(), key=lambda x: travel_times.get(x, float('inf'))): print(f"{island}: {resource_map[island]:.2f} shells (Travel Time: {travel_times[island]} hours)")
