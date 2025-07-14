@@ -26,58 +26,65 @@ populations = {
     "Fiji": 1500,
 }
 
+now = datetime.now()
 last_visit = {
-    "Hawai'i": datetime.now() - timedelta(days=12),
-    "Tahiti": datetime.now() - timedelta(days=20),
-    "Samoa": datetime.now() - timedelta(days=5),
-    "Fiji": datetime.now() - timedelta(days=30),
+    "Hawai'i": now - timedelta(days=12),
+    "Tahiti": now - timedelta(days=20),
+    "Samoa": now - timedelta(days=5),
+    "Fiji": now - timedelta(days=30),
 }
 
-# Priority score 
+# Priority score
 def skill_priority(island):
     days_since = (datetime.now() - last_visit[island]).days
     return populations[island] * days_since
 
-# DFS route finder 
-def prioritized_leader_route(start, time_budget):
-    best_route = []
-    best_score = -1
-    best_time = float('inf')
+# Greedy Algorithm Route 
+def full_route_with_revisits(start, time_budget):
+    curr = start
+    route = [curr]
+    time_used = 0
+    total_score = 0
+    exp_index = defaultdict(int)
+    teaching_log = defaultdict(list)
 
-    def dfs(curr, visited, curr_time, priority_score, route):
-        nonlocal best_route, best_score, best_time
+    while time_used < time_budget:
+        if exp_index[curr] < len(exp[curr]):
+            e_time = exp[curr][exp_index[curr]]
+            if time_used + e_time <= time_budget:
+                time_used += e_time
+                score = skill_priority(curr)
+                total_score += score
+                teaching_log[curr].append((e_time, score))
+                exp_index[curr] += 1
+                continue
 
-        for e_time in sorted(exp[curr]):
-            if curr_time + e_time <= time_budget:
-                curr_time += e_time
+        next_options = sorted(G[curr], key=lambda x: skill_priority(x[0]), reverse=True)
+        moved = False
+        for neighbor, travel_time in next_options:
+            if time_used + travel_time <= time_budget:
+                route.append(neighbor)
+                time_used += travel_time
+                curr = neighbor
+                moved = True
+                break
+        if not moved:
+            break
 
-        priority_score += skill_priority(curr)
-
-        if priority_score > best_score or (priority_score == best_score and curr_time < best_time):
-            best_route = route[:]
-            best_score = priority_score
-            best_time = curr_time
-
-        for neighbor, travel_time in G[curr]:
-            if neighbor not in visited and curr_time + travel_time <= time_budget:
-                visited.add(neighbor)
-                dfs(neighbor, visited, curr_time + travel_time, priority_score, route + [neighbor])
-                visited.remove(neighbor)
-
-    dfs(start, set([start]), 0, 0, [start])
-    return best_route, best_time, best_score
+    return route, time_used, total_score, teaching_log
 
 # Test
 start = "Hawai'i"
-TIME_BUDGET = 30
+TIME_BUDGET = 20
 
-leader_route, total_time, priority_score = prioritized_leader_route(start, TIME_BUDGET)
+route, total_time, priority_score, teaching_log = full_route_with_revisits(start, TIME_BUDGET)
 
-print("Route:", " → ".join(leader_route))
-print(f"Total time used: {total_time:.2f} hours")
-print("Total priority score:", priority_score)
-
+print("Route taken:")
+print(" → ".join(route))
+print(f"\nTotal time used: {total_time:.2f} hours")
+print(f"Total priority score: {priority_score}\n")
 # Expected output 
-# Route: Hawaii → Tahiti → Fiji → Samoa 
-# Total time used: 20.25 hours
-# Total priority score: 83400
+# Route taken: 
+# Hawaii → Tahiti → Fiji → Samoa 
+# Total time used: 19.25 hours
+# Total priority score: 187800
